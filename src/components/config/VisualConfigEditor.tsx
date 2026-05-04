@@ -789,6 +789,20 @@ export function VisualConfigEditor({
                   disabled={disabled}
                   onChange={(loggingToFile) => onChange({ loggingToFile })}
                 />
+                <ToggleRow
+                  title={t('config_management.visual.sections.system.usage_statistics_enabled', {
+                    defaultValue: '用量统计队列',
+                  })}
+                  description={t(
+                    'config_management.visual.sections.system.usage_statistics_enabled_desc',
+                    {
+                      defaultValue: '启用 CPA 的 RESP 用量队列，供请求监控服务消费并持久化单次请求事件。',
+                    }
+                  )}
+                  checked={values.usageStatisticsEnabled}
+                  disabled={disabled}
+                  onChange={(usageStatisticsEnabled) => onChange({ usageStatisticsEnabled })}
+                />
               </SectionGrid>
 
               <SectionGrid>

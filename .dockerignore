@@ -1,0 +1,17 @@
+.git
+.github
+.gitnexus
+node_modules
+dist
+dist-ssr
+reffer
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.DS_Store
+usage-service/*.sqlite
+usage-service/*.sqlite-shm
+usage-service/*.sqlite-wal
+usage-service/data

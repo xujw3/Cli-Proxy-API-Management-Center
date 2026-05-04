@@ -1,0 +1,244 @@
+.container {
+  display: grid;
+  gap: 20px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.titleGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.pageTitle {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 2rem;
+  line-height: 1.15;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.summaryCard {
+  display: grid;
+  gap: 8px;
+  min-height: 112px;
+}
+
+.summaryLabel {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.summaryValue {
+  color: var(--text-primary);
+  font-size: 1.85rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.summaryMeta {
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+}
+
+.toolbar {
+  display: grid;
+  gap: 14px;
+}
+
+.filterRow,
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.searchInput {
+  min-width: min(420px, 100%);
+  flex: 1 1 280px;
+}
+
+.segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--bg-secondary);
+}
+
+.segmentButton {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.86rem;
+  cursor: pointer;
+}
+
+.segmentButtonActive {
+  background: var(--accent-color);
+  color: white;
+}
+
+.metaPill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+}
+
+.errorBox {
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--error-color) 32%, var(--border-color));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--error-color) 10%, var(--bg-primary));
+  color: var(--error-color);
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+}
+
+.table th {
+  padding: 0 10px 6px;
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 13px 10px;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.table td:first-child {
+  border-left: 1px solid var(--border-color);
+  border-radius: 14px 0 0 14px;
+}
+
+.table td:last-child {
+  border-right: 1px solid var(--border-color);
+  border-radius: 0 14px 14px 0;
+}
+
+.primaryCell {
+  display: grid;
+  gap: 4px;
+}
+
+.primaryCell small {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+
+.monoCell {
+  font-family: var(--font-family-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.statusGood {
+  background: color-mix(in srgb, var(--success-color) 12%, var(--bg-primary));
+  color: var(--success-color);
+}
+
+.statusWarn {
+  background: color-mix(in srgb, #f59e0b 14%, var(--bg-primary));
+  color: #d97706;
+}
+
+.statusBad {
+  background: color-mix(in srgb, var(--error-color) 12%, var(--bg-primary));
+  color: var(--error-color);
+}
+
+.deltaGood {
+  color: var(--success-color);
+}
+
+.deltaBad {
+  color: var(--error-color);
+}
+
+.emptyState {
+  display: grid;
+  min-height: 140px;
+  place-items: center;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .header {
+    display: grid;
+  }
+
+  .actions {
+    justify-content: flex-start;
+  }
+
+  .pageTitle {
+    font-size: 1.65rem;
+  }
+}

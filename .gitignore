@@ -33,3 +33,5 @@ settings.local.json
 *.njsproj
 *.sln
 *.sw?
+.gitnexus
+reffer/
