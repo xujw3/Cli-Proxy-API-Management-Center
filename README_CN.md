@@ -82,9 +82,88 @@ npm run build
 - **认证文件**：上传/下载/删除 JSON 凭据，筛选/搜索/分页，标记 runtime-only；查看单个凭据可用模型（依赖后端支持）；管理 OAuth 排除模型（支持 `*` 通配符）；配置 OAuth 模型别名映射。
 - **OAuth**：对支持的提供商发起 OAuth/设备码流程，轮询状态；可选提交回调 `redirect_url`；包含 iFlow Cookie 导入。
 - **配额管理**：管理 Claude、Antigravity、Codex、Gemini CLI 等提供商的配额上限与使用情况。
-- **配置文件**：浏览器内编辑 `/config.yaml`（YAML 高亮 + 搜索），保存/重载。
+- **请求监控**：查看单次请求事件、成功/失败状态、模型、端点、Token 数、延迟、来源与 Auth Index。优先读取持久化的 `usage-service` 事件流，不可用时回退到 `/api-key-usage` 聚合快照。
+- **配置文件**：浏览器内编辑 `/config.yaml`（YAML 高亮 + 搜索），保存/重载；可视化编辑器可开启 `usage-statistics-enabled` 供请求监控使用。
 - **日志**：增量拉取日志、自动刷新、搜索、隐藏管理端流量、清空日志；下载请求错误日志文件。
 - **系统信息**：快捷链接 + 拉取 `/v1/models` 并分组展示（需要至少一个代理 API Key 才能查询模型）。
+
+## 请求监控与用量持久化
+
+请求监控页支持两种模式：
+
+1. **事件模式（推荐）**：运行内置 `usage-service`。它会消费 CLI Proxy API 的 RESP 用量队列，将每次请求事件写入 SQLite，并通过 `/v0/management/usage` 提供给 Web UI。
+2. **回退模式**：如果 `usage-service` 未启用或不可用，请求监控页会读取 `/api-key-usage`，并在浏览器本地保存聚合快照。
+
+### 后端要求
+
+在 CLI Proxy API 中开启用量统计：
+
+```yaml
+usage-statistics-enabled: true
+```
+
+也可以在配置文件页的可视化编辑器中通过 **系统 → 用量统计队列** 开启。
+
+CLI Proxy API 的 Management API 必须可访问，并且 RESP 队列消费者会使用同一个管理密钥认证。
+
+### 本地运行 usage-service
+
+```bash
+cd usage-service
+go run ./cmd/cpa-manager
+```
+
+默认服务地址：`http://localhost:18317`。
+
+然后打开 **请求监控**，启用 **使用 usage-service**，服务地址保持 `http://localhost:18317`，点击 **配置采集服务**。页面会把当前 CPA 地址、管理密钥、队列名和 pop 方向发送给 `usage-service`。
+
+常用环境变量：
+
+| 变量 | 默认值 | 作用 |
+| --- | --- | --- |
+| `HTTP_ADDR` | `0.0.0.0:18317` | usage-service HTTP 监听地址 |
+| `USAGE_DATA_DIR` | `/data` | 数据目录 |
+| `USAGE_DB_PATH` | `/data/usage.sqlite` | SQLite 数据库路径 |
+| `CPA_UPSTREAM_URL` | 空 | CLI Proxy API 基础地址，例如 `http://host:8317` |
+| `CPA_MANAGEMENT_KEY` | 空 | Management API / RESP 鉴权用管理密钥 |
+| `USAGE_RESP_QUEUE` | `usage` | RESP 队列 key |
+| `USAGE_RESP_POP_SIDE` | `right` | `right` = RPOP，`left` = LPOP |
+| `USAGE_BATCH_SIZE` | `100` | 每轮消费事件数 |
+| `USAGE_POLL_INTERVAL_MS` | `500` | 轮询间隔 |
+| `USAGE_QUERY_LIMIT` | `50000` | usage API 返回的最大事件数 |
+
+如果设置了 `CPA_UPSTREAM_URL` 和 `CPA_MANAGEMENT_KEY`，采集器会自动启动；否则可在请求监控页点击配置按钮完成初始化。
+
+### Docker 运行
+
+```bash
+docker run -d \
+  --name cpa-manager \
+  -p 18317:18317 \
+  -v cpa-manager-data:/data \
+  -e CPA_UPSTREAM_URL=http://host.docker.internal:8317 \
+  -e CPA_MANAGEMENT_KEY=your-management-key \
+  your-dockerhub-user/cli-proxy-api-management-center:latest
+```
+
+可打开 `http://localhost:18317/management.html`，也可以继续使用原 Web UI，并将请求监控页中的 usage-service 地址指向 `http://localhost:18317`。
+
+## Docker Hub 自动发布
+
+`.github/workflows/dockerhub.yml` 会在 push 到 `main`、push `v*` 标签或手动触发 workflow 时构建并推送多架构镜像（`linux/amd64`、`linux/arm64`）。
+
+需要在 GitHub 仓库设置中配置：
+
+- Secret `DOCKERHUB_USERNAME`：Docker Hub 用户名。
+- Secret `DOCKERHUB_TOKEN`：Docker Hub Access Token。
+- 可选变量 `DOCKERHUB_REPOSITORY`：Docker Hub 仓库名；不填时使用当前 GitHub 仓库名的小写形式。
+
+生成的镜像标签包括：
+
+- 默认分支的 `latest`
+- 分支名
+- Git 标签名
+- `sha-<short-sha>`
 
 ## 技术栈
 

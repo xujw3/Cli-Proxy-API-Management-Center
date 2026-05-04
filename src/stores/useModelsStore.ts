@@ -44,7 +44,7 @@ export const useModelsStore = create<ModelsState>((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      const list = await modelsApi.fetchModels(apiBase, apiKeyScope || undefined);
+      const list = await modelsApi.fetchModelsViaApiCall(apiBase, apiKeyScope || undefined);
       const now = Date.now();
 
       set({

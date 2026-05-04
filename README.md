@@ -83,9 +83,88 @@ See `api.md` for the full authentication rules, server-side limits, and edge cas
 - **Auth Files**: upload/download/delete JSON credentials, filter/search/pagination, runtime-only indicators, view supported models per credential (when the server supports it), manage OAuth excluded models (supports `*` wildcards), configure OAuth model alias mappings.
 - **OAuth**: start OAuth/device flows for supported providers, poll status, optionally submit callback `redirect_url`; includes iFlow cookie import.
 - **Quota Management**: manage quota limits and usage for Claude, Antigravity, Codex, Gemini CLI, and other providers.
-- **Config**: edit `/config.yaml` in-browser with YAML highlighting + search, then save/reload.
+- **Request Monitoring**: view per-request usage events, success/failure status, models, endpoints, token counts, latency, source, and auth index. It prefers the persisted `usage-service` event stream and falls back to `/api-key-usage` aggregate snapshots.
+- **Config**: edit `/config.yaml` in-browser with YAML highlighting + search, then save/reload. The visual editor can enable `usage-statistics-enabled` for request monitoring.
 - **Logs**: tail logs with incremental polling, auto-refresh, search, hide management traffic, clear logs; download request error log files.
 - **System**: quick links + fetch `/v1/models` (grouped view). Requires at least one proxy API key to query models.
+
+## Request monitoring and usage persistence
+
+The Request Monitoring page can work in two modes:
+
+1. **Event mode (recommended)**: run the bundled `usage-service`. It consumes the CLI Proxy API RESP usage queue, stores every request event in SQLite, and serves `/v0/management/usage` for the Web UI.
+2. **Fallback mode**: if `usage-service` is disabled or unavailable, the page reads `/api-key-usage` and keeps browser-local aggregate snapshots.
+
+### Backend requirements
+
+Enable usage statistics in CLI Proxy API:
+
+```yaml
+usage-statistics-enabled: true
+```
+
+You can also enable it from the Config page visual editor via **System → Usage statistics queue**.
+
+The CLI Proxy API Management API must be reachable, and the same management key is used to authenticate the RESP queue consumer.
+
+### Run usage-service locally
+
+```bash
+cd usage-service
+go run ./cmd/cpa-manager
+```
+
+Default service address: `http://localhost:18317`.
+
+Then open **Request Monitoring**, enable **Use usage-service**, keep the service base URL as `http://localhost:18317`, and click **Configure collector service**. The page sends the current CPA base URL, management key, queue name, and pop side to `usage-service`.
+
+Useful environment variables:
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `HTTP_ADDR` | `0.0.0.0:18317` | HTTP address for usage-service |
+| `USAGE_DATA_DIR` | `/data` | Data directory |
+| `USAGE_DB_PATH` | `/data/usage.sqlite` | SQLite database path |
+| `CPA_UPSTREAM_URL` | empty | CLI Proxy API base URL, e.g. `http://host:8317` |
+| `CPA_MANAGEMENT_KEY` | empty | Management key for API/RESP auth |
+| `USAGE_RESP_QUEUE` | `usage` | RESP queue key |
+| `USAGE_RESP_POP_SIDE` | `right` | `right` = RPOP, `left` = LPOP |
+| `USAGE_BATCH_SIZE` | `100` | Events consumed per poll |
+| `USAGE_POLL_INTERVAL_MS` | `500` | Poll interval |
+| `USAGE_QUERY_LIMIT` | `50000` | Max events returned by usage API |
+
+If `CPA_UPSTREAM_URL` and `CPA_MANAGEMENT_KEY` are set, the collector starts automatically. Otherwise, use the Request Monitoring page setup action.
+
+### Run with Docker
+
+```bash
+docker run -d \
+  --name cpa-manager \
+  -p 18317:18317 \
+  -v cpa-manager-data:/data \
+  -e CPA_UPSTREAM_URL=http://host.docker.internal:8317 \
+  -e CPA_MANAGEMENT_KEY=your-management-key \
+  your-dockerhub-user/cli-proxy-api-management-center:latest
+```
+
+Open `http://localhost:18317/management.html` or keep using the normal Web UI and point the Request Monitoring usage-service base URL to `http://localhost:18317`.
+
+## Docker Hub publishing
+
+`.github/workflows/dockerhub.yml` builds and pushes a multi-arch image (`linux/amd64`, `linux/arm64`) on pushes to `main`, `v*` tags, or manual workflow runs.
+
+Configure these GitHub repository settings:
+
+- Secret `DOCKERHUB_USERNAME`: Docker Hub username.
+- Secret `DOCKERHUB_TOKEN`: Docker Hub access token.
+- Optional variable `DOCKERHUB_REPOSITORY`: Docker Hub repository name. If omitted, the workflow uses the GitHub repository name lowercased.
+
+Generated image tags include:
+
+- `latest` for the default branch
+- branch name
+- git tag name
+- `sha-<short-sha>`
 
 ## Tech Stack
 
